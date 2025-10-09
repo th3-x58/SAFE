@@ -1,0 +1,5 @@
+{
+  "name": "Hello ",
+  "description": "A personal finance dashboard to track expenses, manage budgets, set goals, and get AI-powered financial insights. All data is in Indian Rupees (INR).",
+  "requestFramePermissions": []
+}
