@@ -1,19 +1,21 @@
 
-// Placeholder for Firebase configuration.
-// The user will provide the actual configuration details later.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyB1SUZL7_DNCorldZMgkgjTppUJH0ZzQUc",
+  authDomain: "safe-40bfa.firebaseapp.com",
+  projectId: "safe-40bfa",
+  storageBucket: "safe-40bfa.firebasestorage.app",
+  messagingSenderId: "966364914035",
+  appId: "1:966364914035:web:227429bab9f37b2da5a506",
+  measurementId: "G-TFBMRM9T4S"
 };
 
-// To initialize Firebase, you would typically use a function like this:
-// import { initializeApp } from "firebase/app";
-// const app = initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
-console.log("Firebase config loaded (using placeholder data).");
+console.log("Firebase config loaded and initialized.");

@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { cn } from '../../lib/utils';
 import { Page } from '../../App';
-import { DashboardIcon, TransactionsIcon, BudgetsIcon, GoalsIcon, LogoIcon, ChevronLeftIcon, ChevronRightIcon } from '../../lib/icons';
+import { DashboardIcon, TransactionsIcon, BudgetsIcon, GoalsIcon, InvestmentsIcon, FinancialOutlineIcon, LogoIcon, ChevronLeftIcon, ChevronRightIcon } from '../../lib/icons';
 
 interface SidebarProps {
   currentPage: Page;
@@ -16,6 +15,8 @@ const navItems: { name: Page; icon: React.FC<React.SVGProps<SVGSVGElement>> }[] 
   { name: 'Transactions', icon: TransactionsIcon },
   { name: 'Budgets', icon: BudgetsIcon },
   { name: 'Goals', icon: GoalsIcon },
+  { name: 'Investments', icon: InvestmentsIcon },
+  { name: 'Financial Outline', icon: FinancialOutlineIcon },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isCollapsed, setCollapsed }) => {

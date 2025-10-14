@@ -21,7 +21,8 @@ const SpendingChart: React.FC<SpendingChartProps> = ({ transactions }) => {
 
     return Object.entries(spendingByCategory)
       .map(([name, amount]) => ({ name, amount }))
-      .sort((a, b) => b.amount - a.amount);
+      // FIX: Explicitly convert values to numbers before performing subtraction to prevent potential type errors during sorting.
+      .sort((a, b) => Number(b.amount) - Number(a.amount));
   }, [transactions]);
 
   return (
