@@ -1,20 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import type { Transaction, Category } from '../../types';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import { categories } from '../../lib/data';
-import { TrashIcon } from '../../lib/icons';
+import { TrashIcon, UploadIcon } from '../../lib/icons';
 
 interface TransactionsPageProps {
   transactions: Transaction[];
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  addMultipleTransactions: (transactions: Omit<Transaction, 'id'>[]) => void;
   deleteTransaction: (transactionId: string) => void;
 }
 
-const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, addTransaction, deleteTransaction }) => {
+const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, addTransaction, addMultipleTransactions, deleteTransaction }) => {
   const [filter, setFilter] = useState('');
   const [sortKey, setSortKey] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showForm, setShowForm] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [newTx, setNewTx] = useState({
       description: '',
@@ -46,6 +48,78 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, addTr
           });
           setShowForm(false);
       }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const lines = text.trim().split('\n');
+
+      if (lines.length < 2) {
+        alert("CSV file is empty or has only a header.");
+        return;
+      }
+
+      const header = lines.shift()?.trim().toLowerCase();
+      const expectedHeader = 'date,description,amount,category,type';
+      if (header !== expectedHeader) {
+        alert(`Invalid CSV header. Expected: ${expectedHeader}`);
+        return;
+      }
+
+      const newTransactions: Omit<Transaction, 'id'>[] = [];
+      const validCategories = new Set(categories);
+
+      lines.forEach((line, index) => {
+        const values = line.trim().split(',');
+        if (values.length !== 5) {
+          console.warn(`Skipping malformed row ${index + 2}: ${line}`);
+          return;
+        }
+
+        const [date, description, amountStr, category, type] = values;
+        
+        const amount = parseFloat(amountStr);
+        if (isNaN(amount) || amount <= 0) {
+            console.warn(`Skipping row ${index + 2} due to invalid amount: ${amountStr}`);
+            return;
+        }
+
+        const txType = type.toLowerCase().trim();
+        if (txType !== 'income' && txType !== 'expense') {
+            console.warn(`Skipping row ${index + 2} due to invalid type: ${type}`);
+            return;
+        }
+        
+        const txCategory = category.trim() as Category;
+
+        newTransactions.push({
+            date: date.trim(),
+            description: description.trim(),
+            amount,
+            category: validCategories.has(txCategory) ? txCategory : 'Miscellaneous',
+            type: txType as 'income' | 'expense'
+        });
+      });
+
+      if (newTransactions.length > 0) {
+        addMultipleTransactions(newTransactions);
+        alert(`${newTransactions.length} transactions imported successfully!`);
+      } else {
+        alert("No valid transactions found to import.");
+      }
+    };
+    
+    reader.readAsText(file);
+    event.target.value = ''; // Reset file input
   };
 
 
@@ -81,9 +155,25 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, addTr
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Transactions</h1>
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 text-sm font-semibold text-white bg-teal-950 rounded-lg hover:bg-teal-800">
-          {showForm ? 'Cancel' : 'Add Transaction'}
-        </button>
+        <div className="flex items-center gap-4">
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileImport}
+                accept=".csv"
+                className="hidden"
+            />
+            <button 
+                onClick={handleImportClick}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-teal-950 bg-teal-100 rounded-lg hover:bg-teal-200"
+            >
+                <UploadIcon className="w-4 h-4" />
+                Import from CSV
+            </button>
+            <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 text-sm font-semibold text-white bg-teal-950 rounded-lg hover:bg-teal-800">
+            {showForm ? 'Cancel' : 'Add Transaction'}
+            </button>
+        </div>
       </div>
 
       {showForm && (

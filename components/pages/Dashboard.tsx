@@ -15,9 +15,25 @@ interface DashboardProps {
   financialData: FinancialData;
   onUpdateIncome: (newIncome: number) => void;
   onUpdateExpenses: (newExpenses: number) => void;
+  aiAssistantResponse: string;
+  isAssistantLoading: boolean;
+  onAskAssistant: (query: string) => void;
+  aiInsights: string;
+  isInsightsLoading: boolean;
+  onGenerateInsights: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ financialData, onUpdateIncome, onUpdateExpenses }) => {
+const Dashboard: React.FC<DashboardProps> = ({ 
+  financialData, 
+  onUpdateIncome, 
+  onUpdateExpenses,
+  aiAssistantResponse,
+  isAssistantLoading,
+  onAskAssistant,
+  aiInsights,
+  isInsightsLoading,
+  onGenerateInsights
+}) => {
   const { transactions, goals } = financialData;
   const [editingMetric, setEditingMetric] = useState<{ type: 'income' | 'expenses', currentValue: number } | null>(null);
 
@@ -74,12 +90,20 @@ const Dashboard: React.FC<DashboardProps> = ({ financialData, onUpdateIncome, on
         {/* Goals & AI Assistant */}
         <div className="space-y-8">
           <FinancialGoalsPreview goals={goals} />
-          <AiAssistant financialData={financialData} />
+          <AiAssistant 
+            response={aiAssistantResponse}
+            isLoading={isAssistantLoading}
+            onAsk={onAskAssistant}
+          />
         </div>
       </div>
       
       {/* AI Insights */}
-      <AiInsights transactions={transactions} />
+      <AiInsights
+        insights={aiInsights}
+        isLoading={isInsightsLoading}
+        onGenerate={onGenerateInsights}
+      />
 
       {/* Modal for editing overview values */}
       {editingMetric && (

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
@@ -11,7 +10,7 @@ import AIChatPage from './components/pages/AIChatPage';
 import LoginPage from './components/pages/LoginPage';
 import { initialTransactions, initialBudgets, initialGoals } from './lib/data';
 import type { Transaction, Budget, Goal } from './types';
-import { getFinancialOutline, getChatResponse } from './services/geminiService';
+import { getFinancialOutline, getChatResponse, getFinancialAdvice, getSpendingAnalysis } from './services/geminiService';
 
 export type Page = 'Insights' | 'Transactions' | 'Budgets' | 'Goals' | 'Investments' | 'AI Chat';
 
@@ -37,6 +36,12 @@ const App: React.FC = () => {
   const [budgets, setBudgets] = useState<Budget[]>(initialBudgets);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
 
+  // State for AI components on Dashboard
+  const [aiAssistantResponse, setAiAssistantResponse] = useState('');
+  const [isAssistantLoading, setIsAssistantLoading] = useState(false);
+  const [aiInsights, setAiInsights] = useState('');
+  const [isInsightsLoading, setIsInsightsLoading] = useState(false);
+
   const handleLogin = useCallback(() => {
     setIsAuthenticated(true);
   }, []);
@@ -51,17 +56,40 @@ const App: React.FC = () => {
     budgets,
     goals
   }), [transactions, budgets, goals]);
-
-  // State for InvestmentsPage
-  const { monthlySavings } = useMemo(() => {
-    const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-    const expenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
-    return { monthlySavings: income - expenses };
-  }, [transactions]);
   
-  const [monthlyInvestment, setMonthlyInvestment] = useState(monthlySavings > 0 ? Math.round(monthlySavings / 1000) * 1000 : 5000);
-  const [timeHorizon, setTimeHorizon] = useState(10); // years
-  const [returnRate, setReturnRate] = useState(10); // percentage
+    // State for InvestmentsPage - Lifted to preserve user input across navigation
+    const { initialInvestment, monthlySavings } = useMemo(() => {
+        const initial = goals.reduce((acc, g) => acc + g.currentAmount, 0);
+        const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+        const expenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+        const savings = income - expenses;
+        return { initialInvestment: initial, monthlySavings: savings };
+    }, [goals, transactions]);
+
+    const [principal, setPrincipal] = useState(initialInvestment > 0 ? initialInvestment : 50000);
+    const [monthlyContribution, setMonthlyContribution] = useState(monthlySavings > 1000 ? Math.round(monthlySavings / 1000) * 1000 : 5000);
+    const [timeInYears, setTimeInYears] = useState(10);
+    const [annualRate, setAnnualRate] = useState(12);
+    const [contributionTiming, setContributionTiming] = useState<'beginning' | 'end'>('beginning');
+    const [annualIncrease, setAnnualIncrease] = useState(5);
+
+  // AI Dashboard Handlers
+  const handleAskAssistant = useCallback(async (query: string) => {
+    if (!query.trim()) return;
+    setIsAssistantLoading(true);
+    setAiAssistantResponse('');
+    const advice = await getFinancialAdvice(query, financialData);
+    setAiAssistantResponse(advice);
+    setIsAssistantLoading(false);
+  }, [financialData]);
+
+  const handleGenerateInsights = useCallback(async () => {
+    setIsInsightsLoading(true);
+    setAiInsights('');
+    const analysis = await getSpendingAnalysis(financialData.transactions);
+    setAiInsights(analysis);
+    setIsInsightsLoading(false);
+  }, [financialData.transactions]);
   
   // State for AIChatPage
   const [riskProfile, setRiskProfile] = useState<'low' | 'normal' | 'high'>('normal');
@@ -134,62 +162,104 @@ const App: React.FC = () => {
     setTransactions(prev => [...prev, { ...newTransaction, id: `t${prev.length + 1}` }]);
   }, []);
 
+  const addMultipleTransactions = useCallback((newTransactions: Omit<Transaction, 'id'>[]) => {
+    setTransactions(prev => {
+      const transactionsWithIds = newTransactions.map((tx, index) => ({
+        ...tx,
+        id: `t${prev.length + index + 1}`
+      }));
+      return [...prev, ...transactionsWithIds];
+    });
+  }, []);
+
   const deleteTransaction = useCallback((transactionId: string) => {
     setTransactions(prev => prev.filter(t => t.id !== transactionId));
   }, []);
 
   const handleUpdateIncome = useCallback((newIncome: number) => {
-    setTransactions(prev => {
-        const currentIncome = prev.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const difference = newIncome - currentIncome;
-        
-        if(difference === 0) return prev;
+    setTransactions(prevTxs => {
+        const oldIncome = prevTxs.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
 
-        const incomeTransactions = prev.filter(t => t.type === 'income');
-        const largestIncomeTx = incomeTransactions.length > 0
-            ? incomeTransactions.reduce((max, t) => (t.amount > max.amount ? t : max))
-            : null;
+        if (oldIncome > 0 && newIncome > 0) {
+            const scalingFactor = newIncome / oldIncome;
+            
+            setBudgets(prevBudgets => 
+                prevBudgets.map(budget => ({
+                    ...budget,
+                    limit: Math.round(budget.limit * scalingFactor)
+                }))
+            );
 
-        if (largestIncomeTx) {
-            return prev.map(t => t.id === largestIncomeTx.id ? { ...t, amount: t.amount + difference } : t);
-        } else {
-             return [...prev, { 
-                id: `t${prev.length + 1}`,
-                date: new Date().toISOString().split('T')[0],
-                description: 'Monthly Income',
-                amount: newIncome,
-                category: 'Miscellaneous',
-                type: 'income'
-            }];
+            return prevTxs.map(tx => 
+                tx.type === 'income' 
+                ? { ...tx, amount: Math.round(tx.amount * scalingFactor) }
+                : tx
+            );
+        } else if (newIncome > 0) { // Handles case where oldIncome is 0
+            return [
+                ...prevTxs.filter(tx => tx.type !== 'income'),
+                {
+                    id: 't-income-summary',
+                    date: new Date().toISOString().split('T')[0],
+                    description: 'Total Monthly Income',
+                    amount: newIncome,
+                    category: 'Miscellaneous' as const,
+                    type: 'income' as const
+                }
+            ];
         }
+        // if newIncome is 0 or less, remove all income transactions
+        return prevTxs.filter(tx => tx.type !== 'income');
     });
-  }, []);
+  }, [setTransactions, setBudgets]);
   
     const handleUpdateExpenses = useCallback((newExpenses: number) => {
-        setTransactions(prev => {
-            const currentExpenses = prev.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            const difference = newExpenses - currentExpenses;
-            
-            if(difference === 0) return prev;
+        setTransactions(prevTxs => {
+            const oldExpenses = prevTxs.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
 
-            // Add an adjustment transaction
-            return [...prev, {
-                id: `t${prev.length + 1}`,
-                date: new Date().toISOString().split('T')[0],
-                description: 'Expense Adjustment',
-                amount: Math.abs(difference),
-                category: 'Miscellaneous',
-                type: difference > 0 ? 'expense' : 'income' // A negative expense is a credit/income
-            }];
+            if (oldExpenses > 0 && newExpenses > 0) {
+                const scalingFactor = newExpenses / oldExpenses;
+                return prevTxs.map(tx => 
+                    tx.type === 'expense'
+                    ? { ...tx, amount: Math.round(tx.amount * scalingFactor) }
+                    : tx
+                );
+            } else if (newExpenses > 0) { // Handles case where oldExpenses is 0
+                return [
+                    ...prevTxs.filter(tx => tx.type !== 'expense'),
+                    {
+                        id: 't-expense-summary',
+                        date: new Date().toISOString().split('T')[0],
+                        description: 'Total Monthly Expenses',
+                        amount: newExpenses,
+                        category: 'Miscellaneous' as const,
+                        type: 'expense' as const
+                    }
+                ];
+            }
+            // if newExpenses is 0 or less, remove all expense transactions
+            return prevTxs.filter(tx => tx.type !== 'expense');
         });
-    }, []);
+    }, [setTransactions]);
 
     const renderPage = () => {
+        const dashboardProps = {
+            financialData,
+            onUpdateIncome: handleUpdateIncome,
+            onUpdateExpenses: handleUpdateExpenses,
+            aiAssistantResponse,
+            isAssistantLoading,
+            onAskAssistant: handleAskAssistant,
+            aiInsights,
+            isInsightsLoading,
+            onGenerateInsights: handleGenerateInsights
+        };
+
         switch (currentPage) {
         case 'Insights':
-            return <Dashboard financialData={financialData} onUpdateIncome={handleUpdateIncome} onUpdateExpenses={handleUpdateExpenses} />;
+            return <Dashboard {...dashboardProps} />;
         case 'Transactions':
-            return <TransactionsPage transactions={transactions} addTransaction={addTransaction} deleteTransaction={deleteTransaction} />;
+            return <TransactionsPage transactions={transactions} addTransaction={addTransaction} addMultipleTransactions={addMultipleTransactions} deleteTransaction={deleteTransaction} />;
         case 'Budgets':
             return <BudgetsPage budgets={budgets} transactions={transactions} updateBudget={updateBudget} />;
         case 'Goals':
@@ -197,12 +267,18 @@ const App: React.FC = () => {
         case 'Investments':
             return <InvestmentsPage 
                     financialData={financialData}
-                    monthlyInvestment={monthlyInvestment}
-                    setMonthlyInvestment={setMonthlyInvestment}
-                    timeHorizon={timeHorizon}
-                    setTimeHorizon={setTimeHorizon}
-                    returnRate={returnRate}
-                    setReturnRate={setReturnRate}
+                    principal={principal}
+                    setPrincipal={setPrincipal}
+                    monthlyContribution={monthlyContribution}
+                    setMonthlyContribution={setMonthlyContribution}
+                    timeInYears={timeInYears}
+                    setTimeInYears={setTimeInYears}
+                    annualRate={annualRate}
+                    setAnnualRate={setAnnualRate}
+                    contributionTiming={contributionTiming}
+                    setContributionTiming={setContributionTiming}
+                    annualIncrease={annualIncrease}
+                    setAnnualIncrease={setAnnualIncrease}
                     />;
         case 'AI Chat':
             return <AIChatPage
@@ -214,7 +290,7 @@ const App: React.FC = () => {
                     sendMessage={handleSendMessage}
                     />;
         default:
-            return <Dashboard financialData={financialData} onUpdateIncome={handleUpdateIncome} onUpdateExpenses={handleUpdateExpenses} />;
+            return <Dashboard {...dashboardProps} />;
         }
     };
 

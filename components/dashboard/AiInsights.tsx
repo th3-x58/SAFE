@@ -1,25 +1,19 @@
 
-import React, { useState, useCallback } from 'react';
-import type { Transaction } from '../../types';
-import { getSpendingAnalysis } from '../../services/geminiService';
+import React from 'react';
 import { SparklesIcon } from '../../lib/icons';
 import Card from '../common/Card';
 
 interface AiInsightsProps {
-  transactions: Transaction[];
+  insights: string;
+  isLoading: boolean;
+  onGenerate: () => void;
 }
 
-const AiInsights: React.FC<AiInsightsProps> = ({ transactions }) => {
-  const [insights, setInsights] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+const AiInsights: React.FC<AiInsightsProps> = ({ insights, isLoading, onGenerate }) => {
 
-  const generateInsights = useCallback(async () => {
-    setIsLoading(true);
-    setInsights('');
-    const analysis = await getSpendingAnalysis(transactions);
-    setInsights(analysis);
-    setIsLoading(false);
-  }, [transactions]);
+  const generateInsights = () => {
+    onGenerate();
+  };
 
   return (
     <Card>
@@ -33,14 +27,18 @@ const AiInsights: React.FC<AiInsightsProps> = ({ transactions }) => {
           disabled={isLoading}
           className="px-4 py-2 text-sm font-semibold text-white bg-teal-950 rounded-lg hover:bg-teal-800 disabled:bg-gray-400"
         >
-          {isLoading ? 'Generating...' : 'Generate Insights'}
+          {isLoading ? 'Generating...' : insights ? 'Regenerate Insights' : 'Generate Insights'}
         </button>
       </div>
       
       {insights ? (
         <div className="mt-4 p-4 prose prose-sm max-w-none bg-teal-50 rounded-lg" dangerouslySetInnerHTML={{ __html: insights.replace(/\n/g, '<br />').replace(/\*/g, '•') }} />
       ) : (
-        <p className="mt-4 text-sm text-gray-500">Click the button to get automated insights on your spending patterns, saving recommendations, and more.</p>
+         isLoading ? (
+            <p className="mt-4 text-sm text-center text-gray-500">Generating your personalized insights...</p>
+         ) : (
+            <p className="mt-4 text-sm text-gray-500">Click the button to get automated insights on your spending patterns, saving recommendations, and more.</p>
+         )
       )}
     </Card>
   );

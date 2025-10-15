@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '../../lib/utils';
 import { Page } from '../../App';
@@ -72,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isCollap
             "ml-3 transition-opacity",
             isCollapsed ? "sr-only" : "opacity-100"
           )}>
-            <p className="font-semibold text-gray-800 text-sm">Tim</p>
+            <p className="font-semibold text-gray-800 text-sm">Tims</p>
             <p className="text-xs text-gray-500">Age: 21</p>
           </div>
         </div>

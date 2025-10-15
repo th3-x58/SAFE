@@ -1,26 +1,20 @@
 
 import React, { useState } from 'react';
-import { getFinancialAdvice } from '../../services/geminiService';
-import type { FinancialData } from '../../types';
 import { SparklesIcon, SendIcon } from '../../lib/icons';
 import Card from '../common/Card';
 
 interface AiAssistantProps {
-  financialData: FinancialData;
+  response: string;
+  isLoading: boolean;
+  onAsk: (query: string) => void;
 }
 
-const AiAssistant: React.FC<AiAssistantProps> = ({ financialData }) => {
+const AiAssistant: React.FC<AiAssistantProps> = ({ response, isLoading, onAsk }) => {
   const [query, setQuery] = useState('');
-  const [response, setResponse] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAsk = async () => {
+  const handleAsk = () => {
     if (!query.trim()) return;
-    setIsLoading(true);
-    setResponse('');
-    const advice = await getFinancialAdvice(query, financialData);
-    setResponse(advice);
-    setIsLoading(false);
+    onAsk(query);
   };
 
   return (
@@ -44,7 +38,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ financialData }) => {
           />
           <button 
             onClick={handleAsk}
-            disabled={isLoading}
+            disabled={isLoading || !query.trim()}
             className="absolute top-1/2 right-3 -translate-y-1/2 p-2 text-gray-500 rounded-full hover:bg-gray-200 disabled:opacity-50"
           >
             <SendIcon className="w-5 h-5" />

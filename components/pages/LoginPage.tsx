@@ -1,11 +1,13 @@
-import React from 'react';
-import { LogoIcon } from '../../lib/icons';
+import React, { useState } from 'react';
+import { LogoIcon, EyeIcon, EyeOffIcon } from '../../lib/icons';
 
 interface LoginPageProps {
   onLogin: () => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onLogin();
@@ -34,24 +36,36 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 autoComplete="email"
                 required
                 className="relative block w-full px-3 py-3 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
-                placeholder="Email address (demo)"
-                defaultValue="demo@safe.app"
+                placeholder="Email address"
+                defaultValue="miniproject@hello.finance"
               />
             </div>
-            <div>
+            <div className="relative">
               <label htmlFor="password" className="sr-only">
                 Password
               </label>
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={isPasswordVisible ? 'text' : 'password'}
                 autoComplete="current-password"
                 required
                 className="relative block w-full px-3 py-3 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
-                defaultValue="password"
+                defaultValue="Savings_And_Financial_Empowerment#2025"
               />
+              <button
+                type="button"
+                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700"
+                aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+              >
+                {isPasswordVisible ? (
+                  <EyeOffIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
             </div>
           </div>
 

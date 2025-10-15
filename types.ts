@@ -1,5 +1,5 @@
 
-export type Category = 'Groceries' | 'Transport' | 'Entertainment' | 'Bills' | 'Shopping' | 'Food' | 'Health' | 'Miscellaneous';
+export type Category = 'Groceries' | 'Transport' | 'Entertainment' | 'Bills' | 'Shopping' | 'Food' | 'Health' | 'Miscellaneous' | 'Stationery' | 'Education';
 
 export interface Transaction {
   id: string;
