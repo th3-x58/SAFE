@@ -118,102 +118,94 @@ const App: React.FC = () => {
             : null;
 
         if (largestIncomeTx) {
-            // Update the largest income transaction, ensure amount doesn't go below zero
-            const newAmount = largestIncomeTx.amount + difference;
-            return prev.map(t => 
-                t.id === largestIncomeTx.id 
-                ? { ...t, amount: newAmount > 0 ? newAmount : 0 } 
-                : t
-            );
-        } else if (difference > 0) {
-             // Or add a new income transaction if none exists
-            return [...prev, {
-                id: `t_adj_${Date.now()}`,
+            return prev.map(t => t.id === largestIncomeTx.id ? { ...t, amount: t.amount + difference } : t);
+        } else {
+             return [...prev, { 
+                id: `t${prev.length + 1}`,
                 date: new Date().toISOString().split('T')[0],
-                description: 'Income Adjustment',
-                amount: difference,
+                description: 'Monthly Income',
+                amount: newIncome,
                 category: 'Miscellaneous',
-                type: 'income',
+                type: 'income'
             }];
         }
-        return prev;
     });
   }, []);
+  
+    const handleUpdateExpenses = useCallback((newExpenses: number) => {
+        setTransactions(prev => {
+            const currentExpenses = prev.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const difference = newExpenses - currentExpenses;
+            
+            if(difference === 0) return prev;
 
-  const handleUpdateExpenses = useCallback((newExpenses: number) => {
-      setTransactions(prev => {
-          const currentExpenses = prev.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-          const difference = newExpenses - currentExpenses;
+            // Add an adjustment transaction
+            return [...prev, {
+                id: `t${prev.length + 1}`,
+                date: new Date().toISOString().split('T')[0],
+                description: 'Expense Adjustment',
+                amount: Math.abs(difference),
+                category: 'Miscellaneous',
+                type: difference > 0 ? 'expense' : 'income' // A negative expense is a credit/income
+            }];
+        });
+    }, []);
 
-          if (difference === 0) return prev;
-
-          const adjustment: Omit<Transaction, 'id'> = {
-              date: new Date().toISOString().split('T')[0],
-              category: 'Miscellaneous',
-              amount: Math.abs(difference),
-              description: difference > 0 ? 'Expense Adjustment' : 'Expense Correction (Refund)',
-              type: difference > 0 ? 'expense' : 'income',
-          };
-          
-          return [...prev, { ...adjustment, id: `t_adj_${Date.now()}` }];
-      });
-  }, []);
-
-  const renderContent = () => {
-    switch (currentPage) {
-      case 'Insights':
-        return <Dashboard financialData={financialData} onUpdateIncome={handleUpdateIncome} onUpdateExpenses={handleUpdateExpenses} />;
-      case 'Transactions':
-        return <TransactionsPage transactions={transactions} addTransaction={addTransaction} deleteTransaction={deleteTransaction} />;
-      case 'Budgets':
-        return <BudgetsPage budgets={budgets} transactions={transactions} updateBudget={updateBudget} />;
-      case 'Goals':
-        return <GoalsPage goals={goals} updateGoal={updateGoal} />;
-      case 'Investments':
-        return <InvestmentsPage 
-                    financialData={financialData} 
+    const renderPage = () => {
+        switch (currentPage) {
+        case 'Insights':
+            return <Dashboard financialData={financialData} onUpdateIncome={handleUpdateIncome} onUpdateExpenses={handleUpdateExpenses} />;
+        case 'Transactions':
+            return <TransactionsPage transactions={transactions} addTransaction={addTransaction} deleteTransaction={deleteTransaction} />;
+        case 'Budgets':
+            return <BudgetsPage budgets={budgets} transactions={transactions} updateBudget={updateBudget} />;
+        case 'Goals':
+            return <GoalsPage goals={goals} updateGoal={updateGoal} />;
+        case 'Investments':
+            return <InvestmentsPage 
+                    financialData={financialData}
                     monthlyInvestment={monthlyInvestment}
                     setMonthlyInvestment={setMonthlyInvestment}
                     timeHorizon={timeHorizon}
                     setTimeHorizon={setTimeHorizon}
                     returnRate={returnRate}
                     setReturnRate={setReturnRate}
-                />;
-      case 'Financial Outline':
-        return <FinancialOutlinePage 
-                    financialData={financialData} 
+                    />;
+        case 'Financial Outline':
+            return <FinancialOutlinePage
+                    financialData={financialData}
                     riskProfile={riskProfile}
                     setRiskProfile={setRiskProfile}
                     outline={outline}
                     isLoading={isOutlineLoading}
                     budgetChartData={budgetChartData}
                     generateOutline={generateOutline}
-                />;
-      default:
-        return <Dashboard financialData={financialData} onUpdateIncome={handleUpdateIncome} onUpdateExpenses={handleUpdateExpenses} />;
+                    />;
+        default:
+            return <Dashboard financialData={financialData} onUpdateIncome={handleUpdateIncome} onUpdateExpenses={handleUpdateExpenses} />;
+        }
+    };
+
+    if (!isAuthenticated) {
+        return <LoginPage onLogin={handleLogin} />;
     }
-  };
 
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} />;
-  }
-
-  return (
-    <div className="flex h-screen bg-gray-100 font-sans">
-      <Sidebar 
-        currentPage={currentPage} 
-        setCurrentPage={setCurrentPage} 
-        isCollapsed={isSidebarCollapsed} 
-        setCollapsed={setSidebarCollapsed}
-      />
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
-        <Header />
-        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-          {renderContent()}
-        </main>
-      </div>
-    </div>
-  );
+    return (
+        <div className="flex h-screen bg-gray-50">
+        <Sidebar 
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            isCollapsed={isSidebarCollapsed}
+            setCollapsed={setSidebarCollapsed}
+        />
+        <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
+            <Header />
+            <main className="flex-1 overflow-y-auto p-8">
+            {renderPage()}
+            </main>
+        </div>
+        </div>
+    );
 };
 
 export default App;

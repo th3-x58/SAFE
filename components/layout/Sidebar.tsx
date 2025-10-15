@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isCollap
           "ml-3 text-xl font-bold text-gray-800 transition-opacity duration-200",
           isCollapsed ? 'opacity-0' : 'opacity-100'
         )}>
-          Hello
+          SAFE
         </span>
       </div>
       <nav className="flex-1 px-4 py-4">

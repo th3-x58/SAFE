@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { LogoIcon } from '../../lib/icons';
 
@@ -18,7 +17,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         <div className="flex flex-col items-center">
           <LogoIcon className="w-16 h-16 text-teal-950" />
           <h1 className="mt-4 text-3xl font-extrabold text-gray-900">
-            Hello Finance
+            SAFE Finance
           </h1>
           <p className="mt-2 text-gray-600">Sign in to your dashboard</p>
         </div>
@@ -36,7 +35,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 required
                 className="relative block w-full px-3 py-3 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
                 placeholder="Email address (demo)"
-                defaultValue="demo@hello.app"
+                defaultValue="demo@safe.app"
               />
             </div>
             <div>

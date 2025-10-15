@@ -4,7 +4,7 @@ type IconProps = React.SVGProps<SVGSVGElement>;
 
 export const LogoIcon = (props: IconProps) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+        <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91C16.59 20.85 20 16.14 20 11.09V5l-8-3zm-1.12 13.06l-3.54-3.54 1.41-1.41 2.12 2.12 4.95-4.95 1.41 1.41-6.36 6.37z"/>
     </svg>
 );
 
