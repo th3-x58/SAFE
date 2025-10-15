@@ -140,3 +140,33 @@ export const getFinancialOutline = async (financialData: FinancialData, riskProf
 
     return generateContent(prompt);
 };
+
+export const getChatResponse = async (
+    history: { role: 'user' | 'model'; parts: { text: string }[] }[],
+    financialData: FinancialData
+): Promise<string> => {
+    const income = financialData.transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+    const expenses = financialData.transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+    
+    const systemInstruction = `You are SAFE, a friendly and helpful financial assistant for a user in India. All monetary values are in Indian Rupees (INR). Keep your responses concise, conversational, and use markdown for formatting. You can use the following real-time data about the user to inform your answers.
+    
+    User's Financial Profile:
+    - Monthly Income: ${formatCurrency(income)}
+    - Monthly Expenses: ${formatCurrency(expenses)}
+    - Budgets: ${JSON.stringify(financialData.budgets)}
+    - Financial Goals: ${JSON.stringify(financialData.goals)}`;
+    
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: history,
+            config: {
+                systemInstruction,
+            },
+        });
+        return response.text;
+    } catch (error) {
+        console.error("Error generating chat response:", error);
+        return "I'm having trouble connecting right now. Please try again in a moment.";
+    }
+};

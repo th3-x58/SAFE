@@ -7,19 +7,25 @@ import TransactionsPage from './components/pages/TransactionsPage';
 import BudgetsPage from './components/pages/BudgetsPage';
 import GoalsPage from './components/pages/GoalsPage';
 import InvestmentsPage from './components/pages/InvestmentsPage';
-import FinancialOutlinePage from './components/pages/FinancialOutlinePage';
+import AIChatPage from './components/pages/AIChatPage';
 import LoginPage from './components/pages/LoginPage';
 import { initialTransactions, initialBudgets, initialGoals } from './lib/data';
 import type { Transaction, Budget, Goal } from './types';
-import { getFinancialOutline } from './services/geminiService';
+import { getFinancialOutline, getChatResponse } from './services/geminiService';
 
-export type Page = 'Insights' | 'Transactions' | 'Budgets' | 'Goals' | 'Investments' | 'Financial Outline';
+export type Page = 'Insights' | 'Transactions' | 'Budgets' | 'Goals' | 'Investments' | 'AI Chat';
 
 type BudgetChartData = {
     name: string;
     value: number;
     percentage: number;
 }[];
+
+export interface ChatMessage {
+  role: 'user' | 'model';
+  parts: { text: string }[];
+  chartData?: BudgetChartData | null;
+}
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -33,6 +39,11 @@ const App: React.FC = () => {
 
   const handleLogin = useCallback(() => {
     setIsAuthenticated(true);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    setIsAuthenticated(false);
+    setCurrentPage('Insights'); // Reset to default page on logout
   }, []);
 
   const financialData = useMemo(() => ({
@@ -52,42 +63,64 @@ const App: React.FC = () => {
   const [timeHorizon, setTimeHorizon] = useState(10); // years
   const [returnRate, setReturnRate] = useState(10); // percentage
   
-  // State for FinancialOutlinePage
+  // State for AIChatPage
   const [riskProfile, setRiskProfile] = useState<'low' | 'normal' | 'high'>('normal');
-  const [outline, setOutline] = useState('');
-  const [isOutlineLoading, setIsOutlineLoading] = useState(false);
-  const [budgetChartData, setBudgetChartData] = useState<BudgetChartData | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [isAiResponding, setIsAiResponding] = useState(false);
 
-  const generateOutline = useCallback(async () => {
-    setIsOutlineLoading(true);
-    setOutline('');
-    setBudgetChartData(null);
+  const generateInitialOutline = useCallback(async () => {
+    setIsAiResponding(true);
+    setChatHistory([]);
     const rawResponse = await getFinancialOutline(financialData, riskProfile);
 
     const jsonRegex = /BUDGET_JSON_START([\s\S]*?)BUDGET_JSON_END/;
     const match = rawResponse.match(jsonRegex);
-
+    
+    let chartData: BudgetChartData | null = null;
     if (match && match[1]) {
         try {
             const parsedJson = JSON.parse(match[1]);
-            setBudgetChartData([
+            chartData = [
                 { name: 'Needs', value: parsedJson.needs.amount, percentage: parsedJson.needs.percentage },
                 { name: 'Wants', value: parsedJson.wants.amount, percentage: parsedJson.wants.percentage },
                 { name: 'Savings', value: parsedJson.savings.amount, percentage: parsedJson.savings.percentage },
-            ]);
+            ];
         } catch (e) {
             console.error("Failed to parse budget JSON", e);
-            setBudgetChartData(null);
         }
-        const cleanText = rawResponse.replace(jsonRegex, '').trim();
-        setOutline(cleanText);
-    } else {
-        setOutline(rawResponse);
-        setBudgetChartData(null);
     }
+    
+    const cleanText = rawResponse.replace(jsonRegex, '').trim();
+    setChatHistory([{
+        role: 'model',
+        parts: [{ text: cleanText }],
+        chartData: chartData
+    }]);
 
-    setIsOutlineLoading(false);
+    setIsAiResponding(false);
   }, [financialData, riskProfile]);
+  
+  const handleSendMessage = useCallback(async (message: string) => {
+    const newUserMessage: ChatMessage = {
+      role: 'user',
+      parts: [{ text: message }],
+    };
+    
+    const currentChatHistory = [...chatHistory, newUserMessage];
+    setChatHistory(currentChatHistory);
+    setIsAiResponding(true);
+
+    const historyForApi = currentChatHistory.map(({ chartData, ...msg }) => msg);
+    const aiResponseText = await getChatResponse(historyForApi, financialData);
+
+    const newAiMessage: ChatMessage = {
+      role: 'model',
+      parts: [{ text: aiResponseText }],
+    };
+    setChatHistory([...currentChatHistory, newAiMessage]);
+    setIsAiResponding(false);
+  }, [chatHistory, financialData]);
+
 
   const updateBudget = useCallback((updatedBudget: Budget) => {
     setBudgets(prev => prev.map(b => b.id === updatedBudget.id ? updatedBudget : b));
@@ -171,15 +204,14 @@ const App: React.FC = () => {
                     returnRate={returnRate}
                     setReturnRate={setReturnRate}
                     />;
-        case 'Financial Outline':
-            return <FinancialOutlinePage
-                    financialData={financialData}
+        case 'AI Chat':
+            return <AIChatPage
                     riskProfile={riskProfile}
                     setRiskProfile={setRiskProfile}
-                    outline={outline}
-                    isLoading={isOutlineLoading}
-                    budgetChartData={budgetChartData}
-                    generateOutline={generateOutline}
+                    chatHistory={chatHistory}
+                    isLoading={isAiResponding}
+                    generateOutline={generateInitialOutline}
+                    sendMessage={handleSendMessage}
                     />;
         default:
             return <Dashboard financialData={financialData} onUpdateIncome={handleUpdateIncome} onUpdateExpenses={handleUpdateExpenses} />;
@@ -197,6 +229,7 @@ const App: React.FC = () => {
             setCurrentPage={setCurrentPage}
             isCollapsed={isSidebarCollapsed}
             setCollapsed={setSidebarCollapsed}
+            onLogout={handleLogout}
         />
         <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
             <Header />
