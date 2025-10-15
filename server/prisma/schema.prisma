@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+ 
+model Transaction {
+  id          String   @id @default(cuid())
+  date        String
+  description String
+  amount      Int
+  category    String
+  type        String   // 'income' | 'expense'
+}
+
+model Budget {
+  id       String @id @default(cuid())
+  category String
+  limit    Int
+}
+
+model Goal {
+  id            String @id @default(cuid())
+  name          String
+  targetAmount  Int
+  currentAmount Int
+  deadline      String
+}
+
+model User {
+  id        String  @id @default(cuid())
+  email     String  @unique
+  password  String
+  createdAt DateTime @default(now())
+}
