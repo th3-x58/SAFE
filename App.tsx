@@ -8,9 +8,11 @@ import GoalsPage from './components/pages/GoalsPage';
 import InvestmentsPage from './components/pages/InvestmentsPage';
 import AIChatPage from './components/pages/AIChatPage';
 import LoginPage from './components/pages/LoginPage';
+import RegisterPage from './components/pages/RegisterPage';
 import { initialTransactions, initialBudgets, initialGoals } from './lib/data';
 import type { Transaction, Budget, Goal } from './types';
 import { getFinancialOutline, getChatResponse, getFinancialAdvice, getSpendingAnalysis } from './services/geminiService';
+import { apiBaseUrl } from './lib/utils';
 
 export type Page = 'Insights' | 'Transactions' | 'Budgets' | 'Goals' | 'Investments' | 'AI Chat';
 
@@ -28,6 +30,7 @@ export interface ChatMessage {
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [showRegister, setShowRegister] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<Page>('Insights');
   const [isSidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   
@@ -42,9 +45,27 @@ const App: React.FC = () => {
   const [aiInsights, setAiInsights] = useState('');
   const [isInsightsLoading, setIsInsightsLoading] = useState(false);
 
-  const handleLogin = useCallback(() => {
+  const handleLogin = useCallback(async (email: string, password: string) => {
+    const res = await fetch(`${apiBaseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) throw new Error('Invalid email or password');
+    const data = await res.json();
+    localStorage.setItem('token', data.token);
     setIsAuthenticated(true);
   }, []);
+  const handleRegister = useCallback(async (email: string, password: string) => {
+    const res = await fetch(`${apiBaseUrl}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) throw new Error('Registration failed');
+    // auto-login after register
+    await handleLogin(email, password);
+  }, [handleLogin]);
 
   const handleLogout = useCallback(() => {
     setIsAuthenticated(false);
@@ -295,7 +316,10 @@ const App: React.FC = () => {
     };
 
     if (!isAuthenticated) {
-        return <LoginPage onLogin={handleLogin} />;
+        if (showRegister) {
+          return <RegisterPage onRegister={handleRegister} onSwitchToLogin={() => setShowRegister(false)} />;
+        }
+        return <LoginPage onLogin={handleLogin} onSwitchToRegister={() => setShowRegister(true)} />;
     }
 
     return (
