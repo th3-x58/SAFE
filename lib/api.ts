@@ -1,6 +1,7 @@
 import type { Transaction, Budget, Goal } from '../types';
+import { apiBaseUrl } from './utils';
 
-const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE_URL = `${apiBaseUrl}/api`;
 
 export class ApiError extends Error {
   constructor(message: string, public status?: number) {
@@ -10,9 +11,11 @@ export class ApiError extends Error {
 }
 
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
     ...options,

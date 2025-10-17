@@ -18,7 +18,7 @@ const GoalItem: React.FC<{ goal: Goal }> = ({ goal }) => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div 
-                    className="bg-teal-950 h-2.5 rounded-full" 
+                    className="bg-sky-900 h-2.5 rounded-full" 
                     style={{ width: `${progress > 100 ? 100 : progress}%` }}
                 ></div>
             </div>

@@ -106,29 +106,29 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  <div>
                     <label htmlFor="principal" className="block text-sm font-medium text-gray-700">Initial Investment (₹)</label>
-                    <input type="number" id="principal" value={principal} onChange={(e) => setPrincipal(Number(e.target.value) >= 0 ? Number(e.target.value) : 0)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm" />
+                    <input type="number" id="principal" value={principal} onChange={(e) => setPrincipal(Number(e.target.value) >= 0 ? Number(e.target.value) : 0)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" />
                 </div>
                 <div>
                     <label htmlFor="monthlyContribution" className="block text-sm font-medium text-gray-700">Monthly Contribution (₹)</label>
-                    <input type="number" id="monthlyContribution" value={monthlyContribution} onChange={(e) => setMonthlyContribution(Number(e.target.value) >= 0 ? Number(e.target.value) : 0)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm" />
+                    <input type="number" id="monthlyContribution" value={monthlyContribution} onChange={(e) => setMonthlyContribution(Number(e.target.value) >= 0 ? Number(e.target.value) : 0)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" />
                 </div>
                 <div>
                     <label htmlFor="timeInYears" className="block text-sm font-medium text-gray-700">Investment Period (Years)</label>
-                    <input type="number" id="timeInYears" value={timeInYears} onChange={(e) => setTimeInYears(Number(e.target.value) > 0 ? Number(e.target.value) : 1)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm" />
+                    <input type="number" id="timeInYears" value={timeInYears} onChange={(e) => setTimeInYears(Number(e.target.value) > 0 ? Number(e.target.value) : 1)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" />
                 </div>
                 <div>
                     <label htmlFor="annualRate" className="block text-sm font-medium text-gray-700">Expected Annual Return (%)</label>
-                    <input type="number" id="annualRate" value={annualRate} onChange={(e) => setAnnualRate(Number(e.target.value) >= 0 ? Number(e.target.value) : 0)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm" />
+                    <input type="number" id="annualRate" value={annualRate} onChange={(e) => setAnnualRate(Number(e.target.value) >= 0 ? Number(e.target.value) : 0)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" />
                 </div>
                 <div>
                     <label htmlFor="annualIncrease" className="block text-sm font-medium text-gray-700">Annual Contribution Increase (%)</label>
-                    <input type="number" id="annualIncrease" value={annualIncrease} onChange={(e) => setAnnualIncrease(Number(e.target.value) >= 0 ? Number(e.target.value) : 0)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm" />
+                    <input type="number" id="annualIncrease" value={annualIncrease} onChange={(e) => setAnnualIncrease(Number(e.target.value) >= 0 ? Number(e.target.value) : 0)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Contribution Timing</label>
                     <div className="mt-1 flex rounded-md shadow-sm">
-                        <button onClick={() => setContributionTiming('beginning')} className={cn("relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium w-1/2 justify-center", contributionTiming === 'beginning' ? 'bg-teal-100 text-teal-950 z-10' : 'text-gray-700 hover:bg-gray-50')}>Beginning</button>
-                        <button onClick={() => setContributionTiming('end')} className={cn("relative -ml-px inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium w-1/2 justify-center", contributionTiming === 'end' ? 'bg-teal-100 text-teal-950 z-10' : 'text-gray-700 hover:bg-gray-50')}>End</button>
+                        <button onClick={() => setContributionTiming('beginning')} className={cn("relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium w-1/2 justify-center", contributionTiming === 'beginning' ? 'bg-sky-100 text-sky-900 z-10' : 'text-gray-700 hover:bg-gray-50')}>Beginning</button>
+                        <button onClick={() => setContributionTiming('end')} className={cn("relative -ml-px inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium w-1/2 justify-center", contributionTiming === 'end' ? 'bg-sky-100 text-sky-900 z-10' : 'text-gray-700 hover:bg-gray-50')}>End</button>
                     </div>
                 </div>
             </div>
@@ -162,7 +162,7 @@ const InvestmentsPage: React.FC<InvestmentsPageProps> = ({
             </div>
             <div>
                 <p className="text-sm text-gray-500">Projected Final Value</p>
-                <p className="text-xl font-bold text-teal-950">{formatCurrency(summary.finalAmount)}</p>
+                <p className="text-xl font-bold text-sky-900">{formatCurrency(summary.finalAmount)}</p>
             </div>
         </div>
       </Card>

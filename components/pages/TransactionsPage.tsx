@@ -165,12 +165,12 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, addTr
             />
             <button 
                 onClick={handleImportClick}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-teal-950 bg-teal-100 rounded-lg hover:bg-teal-200"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-sky-900 bg-sky-100 rounded-lg hover:bg-sky-200"
             >
                 <UploadIcon className="w-4 h-4" />
                 Import from CSV
             </button>
-            <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 text-sm font-semibold text-white bg-teal-950 rounded-lg hover:bg-teal-800">
+            <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 text-sm font-semibold text-white bg-sky-900 rounded-lg hover:bg-sky-800">
             {showForm ? 'Cancel' : 'Add Transaction'}
             </button>
         </div>
@@ -190,7 +190,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, addTr
                     <option value="expense">Expense</option>
                     <option value="income">Income</option>
                 </select>
-                <button type="submit" className="px-4 py-2 text-white bg-teal-950 rounded">Add</button>
+                <button type="submit" className="px-4 py-2 text-white bg-sky-900 rounded">Add</button>
             </div>
           </form>
         </div>
@@ -202,7 +202,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, addTr
           placeholder="Filter by description..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="w-full max-w-sm h-10 px-4 mb-4 bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full max-w-sm h-10 px-4 mb-4 bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
         />
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -221,7 +221,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ transactions, addTr
                   <td className="p-4 text-gray-600">{formatDate(tx.date)}</td>
                   <td className="p-4 font-medium text-gray-800">{tx.description}</td>
                   <td className="p-4 text-gray-600">
-                    <span className="px-2 py-1 text-xs font-medium text-teal-800 bg-teal-100 rounded-full">{tx.category}</span>
+                    <span className="px-2 py-1 text-xs font-medium text-sky-800 bg-sky-100 rounded-full">{tx.category}</span>
                   </td>
                   <td className={`p-4 font-semibold text-right ${tx.type === 'income' ? 'text-green-600' : 'text-gray-800'}`}>
                     {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}

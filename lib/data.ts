@@ -3,8 +3,8 @@ import type { Transaction, Budget, Goal, Category } from '../types';
 export const categories: Category[] = ['Groceries', 'Transport', 'Entertainment', 'Bills', 'Shopping', 'Food', 'Health', 'Miscellaneous', 'Stationery', 'Education'];
 
 export const initialTransactions: Transaction[] = [
-  { id: 't1', date: '2025-10-01', description: 'Monthly Allowance from Parents', amount: 20000, category: 'Miscellaneous', type: 'income' },
-  { id: 't2', date: '2025-10-01', description: 'Hostel & Mess Fees', amount: 8000, category: 'Bills', type: 'expense' },
+  { id: 't1', date: '2025-10-01', description: 'Monthly Allowance from Parents', amount: 58000, category: 'Miscellaneous', type: 'income' },
+  { id: 't2', date: '2025-10-01', description: 'Hostel & Mess Fees', amount: 8500, category: 'Bills', type: 'expense' },
   { id: 't3', date: '2025-10-02', description: 'Final Year Project Stationery', amount: 750, category: 'Stationery', type: 'expense' },
   { id: 't4', date: '2025-10-04', description: 'Bike Fuel', amount: 500, category: 'Transport', type: 'expense' },
   { id: 't5', date: '2025-10-05', description: 'Cloud Certification Exam Fee', amount: 2500, category: 'Education', type: 'expense' },
@@ -21,13 +21,13 @@ export const initialTransactions: Transaction[] = [
 
 export const initialBudgets: Budget[] = [
   { id: 'b1', category: 'Food', limit: 3000 },
-  { id: 'b2', category: 'Transport', limit: 1000 },
-  { id: 'b3', category: 'Entertainment', limit: 1000 },
-  { id: 'b4', category: 'Shopping', limit: 1500 },
+  { id: 'b2', category: 'Transport', limit: 800 },
+  { id: 'b3', category: 'Entertainment', limit: 1500 },
+  { id: 'b4', category: 'Shopping', limit: 1800 },
   { id: 'b5', category: 'Bills', limit: 8500 },
-  { id: 'b6', category: 'Groceries', limit: 1000 },
-  { id: 'b7', category: 'Stationery', limit: 1000 },
-  { id: 'b8', category: 'Education', limit: 3000 },
+  { id: 'b6', category: 'Groceries', limit: 1200 },
+  { id: 'b7', category: 'Stationery', limit: 500 },
+  { id: 'b8', category: 'Education', limit: 3500 },
 ];
 
 export const initialGoals: Goal[] = [

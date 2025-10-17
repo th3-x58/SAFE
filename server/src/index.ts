@@ -23,8 +23,8 @@ async function seedIfEmpty() {
   ]);
   if (txCount === 0 && budgetCount === 0 && goalCount === 0) {
     await prisma.$transaction([
-      prisma.transaction.create({ data: { date: '2025-10-01', description: 'Monthly Allowance from Parents', amount: 20000, category: 'Miscellaneous', type: 'income' } }),
-      prisma.transaction.create({ data: { date: '2025-10-01', description: 'Hostel & Mess Fees', amount: 8000, category: 'Bills', type: 'expense' } }),
+      prisma.transaction.create({ data: { date: '2025-10-01', description: 'Monthly Allowance from Parents', amount: 58000, category: 'Miscellaneous', type: 'income' } }),
+      prisma.transaction.create({ data: { date: '2025-10-01', description: 'Hostel & Mess Fees', amount: 8500, category: 'Bills', type: 'expense' } }),
       prisma.transaction.create({ data: { date: '2025-10-02', description: 'Final Year Project Stationery', amount: 750, category: 'Stationery', type: 'expense' } }),
     ]);
     await prisma.$transaction([

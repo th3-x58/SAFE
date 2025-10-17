@@ -19,20 +19,20 @@ const AiInsights: React.FC<AiInsightsProps> = ({ insights, isLoading, onGenerate
     <Card>
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-            <SparklesIcon className="w-6 h-6 text-teal-950" />
+            <SparklesIcon className="w-6 h-6 text-sky-900" />
             <h3 className="ml-2 text-lg font-semibold text-gray-800">AI Insights</h3>
         </div>
         <button
           onClick={generateInsights}
           disabled={isLoading}
-          className="px-4 py-2 text-sm font-semibold text-white bg-teal-950 rounded-lg hover:bg-teal-800 disabled:bg-gray-400"
+          className="px-4 py-2 text-sm font-semibold text-white bg-sky-900 rounded-lg hover:bg-sky-800 disabled:bg-gray-400"
         >
           {isLoading ? 'Generating...' : insights ? 'Regenerate Insights' : 'Generate Insights'}
         </button>
       </div>
       
       {insights ? (
-        <div className="mt-4 p-4 prose prose-sm max-w-none bg-teal-50 rounded-lg" dangerouslySetInnerHTML={{ __html: insights.replace(/\n/g, '<br />').replace(/\*/g, '•') }} />
+        <div className="mt-4 p-4 prose prose-sm max-w-none bg-sky-50 rounded-lg" dangerouslySetInnerHTML={{ __html: insights.replace(/\n/g, '<br />').replace(/\*/g, '•') }} />
       ) : (
          isLoading ? (
             <p className="mt-4 text-sm text-center text-gray-500">Generating your personalized insights...</p>

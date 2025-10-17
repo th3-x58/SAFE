@@ -45,7 +45,7 @@ export const getSpendingAnalysis = async (transactions: Transaction[]): Promise<
     You are an expert financial analyst. Analyze the following list of transactions (in INR) from an Indian user.
     Provide a brief summary of their spending patterns.
     Identify the top 3 spending categories.
-    Suggest 2-3 specific and actionable ways they could save money based on their habits.
+    Suggest 3-5specific and actionable ways they could save money based on their habits.
     Keep the analysis concise and easy to understand. Use markdown for formatting, like using bullet points.
 
     Transactions:

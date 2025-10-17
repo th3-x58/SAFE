@@ -26,7 +26,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
       <div className="mt-4">
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div
-            className="bg-teal-950 h-3 rounded-full"
+            className="bg-sky-900 h-3 rounded-full"
             style={{ width: `${progress > 100 ? 100 : progress}%` }}
           ></div>
         </div>
@@ -100,7 +100,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ goals, updateGoal }) => {
                         </div>
                         <div className="mt-6 flex justify-end gap-4">
                             <button type="button" onClick={() => setEditingGoal(null)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
-                            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-teal-950 rounded-md hover:bg-teal-800">Save Changes</button>
+                            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-sky-900 rounded-md hover:bg-sky-800">Save Changes</button>
                         </div>
                     </form>
                 </Modal>

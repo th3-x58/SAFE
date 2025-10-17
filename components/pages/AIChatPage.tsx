@@ -107,7 +107,7 @@ const AIChatPage: React.FC<AIChatPageProps> = ({
         <p className="text-gray-600">Your personalized, AI-powered guide to mastering your finances and achieving your goals.</p>
         <Card>
           <div className="flex items-center">
-              <SparklesIcon className="w-6 h-6 text-teal-950" />
+              <SparklesIcon className="w-6 h-6 text-sky-900" />
               <h3 className="ml-2 text-lg font-semibold text-gray-800">Step 1: Define Your Investment Style</h3>
           </div>
           <p className="mt-2 text-sm text-gray-500">Select the risk profile that best describes you. This will help us tailor your financial plan.</p>
@@ -118,7 +118,7 @@ const AIChatPage: React.FC<AIChatPageProps> = ({
                       onClick={() => setRiskProfile(option.id)}
                       className={cn(
                           "p-4 border rounded-lg cursor-pointer transition-all",
-                          riskProfile === option.id ? 'bg-teal-100 border-teal-950 ring-2 ring-teal-950' : 'bg-white hover:bg-gray-50'
+                          riskProfile === option.id ? 'bg-sky-100 border-sky-900 ring-2 ring-sky-900' : 'bg-white hover:bg-gray-50'
                       )}
                   >
                       <h4 className="font-semibold text-gray-800">{option.label}</h4>
@@ -130,7 +130,7 @@ const AIChatPage: React.FC<AIChatPageProps> = ({
               <button
                   onClick={generateOutline}
                   disabled={isLoading}
-                  className="px-6 py-3 text-sm font-semibold text-white bg-teal-950 rounded-lg hover:bg-teal-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-6 py-3 text-sm font-semibold text-white bg-sky-900 rounded-lg hover:bg-sky-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                   {isLoading ? 'Generating Your Plan...' : 'Generate My Financial Outline'}
               </button>
@@ -146,8 +146,8 @@ const AIChatPage: React.FC<AIChatPageProps> = ({
         <div className="flex-1 overflow-y-auto pr-4 space-y-4">
             {chatHistory.map((msg, index) => (
                 <div key={index} className={cn("flex items-start gap-3", msg.role === 'user' ? "justify-end" : "justify-start")}>
-                    {msg.role === 'model' && <SparklesIcon className="w-8 h-8 p-1.5 text-white bg-teal-950 rounded-full flex-shrink-0" />}
-                    <div className={cn("max-w-2xl rounded-xl p-4", msg.role === 'user' ? "bg-teal-950 text-white" : "bg-white border")}>
+                    {msg.role === 'model' && <SparklesIcon className="w-8 h-8 p-1.5 text-white bg-sky-900 rounded-full flex-shrink-0" />}
+                    <div className={cn("max-w-2xl rounded-xl p-4", msg.role === 'user' ? "bg-sky-900 text-white" : "bg-white border")}>
                         {msg.chartData && <BudgetChart data={msg.chartData} />}
                         <MarkdownRenderer content={msg.parts[0].text} />
                     </div>
@@ -156,7 +156,7 @@ const AIChatPage: React.FC<AIChatPageProps> = ({
             ))}
             {isLoading && (
                 <div className="flex items-start gap-3 justify-start">
-                    <SparklesIcon className="w-8 h-8 p-1.5 text-white bg-teal-950 rounded-full flex-shrink-0 animate-pulse" />
+                    <SparklesIcon className="w-8 h-8 p-1.5 text-white bg-sky-900 rounded-full flex-shrink-0 animate-pulse" />
                     <div className="max-w-2xl rounded-xl p-4 bg-white border">
                         <div className="flex items-center space-x-2">
                             <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse [animation-delay:-0.3s]"></div>
@@ -175,13 +175,13 @@ const AIChatPage: React.FC<AIChatPageProps> = ({
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Ask a follow-up question..."
-                    className="w-full h-12 pr-14 pl-4 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full h-12 pr-14 pl-4 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
                     disabled={isLoading}
                 />
                 <button
                     type="submit"
                     disabled={isLoading || !newMessage.trim()}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 p-2 text-white bg-teal-950 rounded-full hover:bg-teal-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 p-2 text-white bg-sky-900 rounded-full hover:bg-sky-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     aria-label="Send message"
                 >
                     <SendIcon className="w-5 h-5" />
