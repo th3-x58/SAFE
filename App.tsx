@@ -9,7 +9,6 @@ import InvestmentsPage from './components/pages/InvestmentsPage';
 import AIChatPage from './components/pages/AIChatPage';
 import LoginPage from './components/pages/LoginPage';
 import { initialTransactions, initialBudgets, initialGoals } from './lib/data';
-import { apiBaseUrl } from './lib/utils';
 import type { Transaction, Budget, Goal } from './types';
 import { getFinancialOutline, getChatResponse, getFinancialAdvice, getSpendingAnalysis } from './services/geminiService';
 
@@ -36,24 +35,6 @@ const App: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [budgets, setBudgets] = useState<Budget[]>(initialBudgets);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
-
-  React.useEffect(() => {
-    const loadAll = async () => {
-      try {
-        const [txRes, bRes, gRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/transactions`),
-          fetch(`${apiBaseUrl}/api/budgets`),
-          fetch(`${apiBaseUrl}/api/goals`),
-        ]);
-        if (txRes.ok) setTransactions(await txRes.json());
-        if (bRes.ok) setBudgets(await bRes.json());
-        if (gRes.ok) setGoals(await gRes.json());
-      } catch (e) {
-        console.error('Failed to load from API, using in-memory defaults', e);
-      }
-    };
-    loadAll();
-  }, []);
 
   // State for AI components on Dashboard
   const [aiAssistantResponse, setAiAssistantResponse] = useState('');
@@ -169,79 +150,30 @@ const App: React.FC = () => {
   }, [chatHistory, financialData]);
 
 
-  const updateBudget = useCallback(async (updatedBudget: Budget) => {
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/budgets/${updatedBudget.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: updatedBudget.category, limit: updatedBudget.limit })
-      });
-      if (res.ok) {
-        const saved = await res.json();
-        setBudgets(prev => prev.map(b => b.id === saved.id ? saved : b));
-      }
-    } catch (e) {
-      console.error('Failed to update budget', e);
-    }
+  const updateBudget = useCallback((updatedBudget: Budget) => {
+    setBudgets(prev => prev.map(b => b.id === updatedBudget.id ? updatedBudget : b));
   }, []);
 
-  const updateGoal = useCallback(async (updatedGoal: Goal) => {
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/goals/${updatedGoal.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: updatedGoal.name, targetAmount: updatedGoal.targetAmount, currentAmount: updatedGoal.currentAmount, deadline: updatedGoal.deadline })
-      });
-      if (res.ok) {
-        const saved = await res.json();
-        setGoals(prev => prev.map(g => g.id === saved.id ? saved : g));
-      }
-    } catch (e) {
-      console.error('Failed to update goal', e);
-    }
+  const updateGoal = useCallback((updatedGoal: Goal) => {
+    setGoals(prev => prev.map(g => g.id === updatedGoal.id ? updatedGoal : g));
   }, []);
 
-  const addTransaction = useCallback(async (newTransaction: Omit<Transaction, 'id'>) => {
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/transactions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTransaction)
-      });
-      if (res.ok) {
-        const created = await res.json();
-        setTransactions(prev => [...prev, created]);
-      }
-    } catch (e) {
-      console.error('Failed to add transaction', e);
-    }
+  const addTransaction = useCallback((newTransaction: Omit<Transaction, 'id'>) => {
+    setTransactions(prev => [...prev, { ...newTransaction, id: `t${prev.length + 1}` }]);
   }, []);
 
-  const addMultipleTransactions = useCallback(async (newTransactions: Omit<Transaction, 'id'>[]) => {
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/transactions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTransactions)
-      });
-      if (res.ok) {
-        const created = await res.json();
-        setTransactions(prev => [...prev, ...created]);
-      }
-    } catch (e) {
-      console.error('Failed to import transactions', e);
-    }
+  const addMultipleTransactions = useCallback((newTransactions: Omit<Transaction, 'id'>[]) => {
+    setTransactions(prev => {
+      const transactionsWithIds = newTransactions.map((tx, index) => ({
+        ...tx,
+        id: `t${prev.length + index + 1}`
+      }));
+      return [...prev, ...transactionsWithIds];
+    });
   }, []);
 
-  const deleteTransaction = useCallback(async (transactionId: string) => {
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/transactions/${transactionId}`, { method: 'DELETE' });
-      if (res.ok || res.status === 204) {
-        setTransactions(prev => prev.filter(t => t.id !== transactionId));
-      }
-    } catch (e) {
-      console.error('Failed to delete transaction', e);
-    }
+  const deleteTransaction = useCallback((transactionId: string) => {
+    setTransactions(prev => prev.filter(t => t.id !== transactionId));
   }, []);
 
   const handleUpdateIncome = useCallback((newIncome: number) => {
