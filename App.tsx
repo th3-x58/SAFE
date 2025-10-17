@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import Dashboard from './components/pages/Dashboard';
@@ -9,7 +9,7 @@ import InvestmentsPage from './components/pages/InvestmentsPage';
 import AIChatPage from './components/pages/AIChatPage';
 import LoginPage from './components/pages/LoginPage';
 import RegisterPage from './components/pages/RegisterPage';
-import { initialTransactions, initialBudgets, initialGoals } from './lib/data';
+import { transactionsApi, budgetsApi, goalsApi } from './lib/api';
 import type { Transaction, Budget, Goal } from './types';
 import { getFinancialOutline, getChatResponse, getFinancialAdvice, getSpendingAnalysis } from './services/geminiService';
 import { apiBaseUrl } from './lib/utils';
@@ -35,15 +35,45 @@ const App: React.FC = () => {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   
   // Editable state for financial data
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [budgets, setBudgets] = useState<Budget[]>(initialBudgets);
-  const [goals, setGoals] = useState<Goal[]>(initialGoals);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // State for AI components on Dashboard
   const [aiAssistantResponse, setAiAssistantResponse] = useState('');
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
   const [aiInsights, setAiInsights] = useState('');
   const [isInsightsLoading, setIsInsightsLoading] = useState(false);
+
+  // Load data from API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [transactionsData, budgetsData, goalsData] = await Promise.all([
+          transactionsApi.getAll(),
+          budgetsApi.getAll(),
+          goalsApi.getAll(),
+        ]);
+        setTransactions(transactionsData);
+        setBudgets(budgetsData);
+        setGoals(goalsData);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        // Fallback to empty arrays if API fails
+        setTransactions([]);
+        setBudgets([]);
+        setGoals([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated]);
 
   const handleLogin = useCallback(async (email: string, password: string) => {
     const res = await fetch(`${apiBaseUrl}/api/auth/login`, {
@@ -171,30 +201,57 @@ const App: React.FC = () => {
   }, [chatHistory, financialData]);
 
 
-  const updateBudget = useCallback((updatedBudget: Budget) => {
-    setBudgets(prev => prev.map(b => b.id === updatedBudget.id ? updatedBudget : b));
+  const updateBudget = useCallback(async (updatedBudget: Budget) => {
+    try {
+      const result = await budgetsApi.update(updatedBudget.id, {
+        category: updatedBudget.category,
+        limit: updatedBudget.limit,
+      });
+      setBudgets(prev => prev.map(b => b.id === updatedBudget.id ? result : b));
+    } catch (error) {
+      console.error('Failed to update budget:', error);
+    }
   }, []);
 
-  const updateGoal = useCallback((updatedGoal: Goal) => {
-    setGoals(prev => prev.map(g => g.id === updatedGoal.id ? updatedGoal : g));
+  const updateGoal = useCallback(async (updatedGoal: Goal) => {
+    try {
+      const result = await goalsApi.update(updatedGoal.id, {
+        name: updatedGoal.name,
+        targetAmount: updatedGoal.targetAmount,
+        currentAmount: updatedGoal.currentAmount,
+        deadline: updatedGoal.deadline,
+      });
+      setGoals(prev => prev.map(g => g.id === updatedGoal.id ? result : g));
+    } catch (error) {
+      console.error('Failed to update goal:', error);
+    }
   }, []);
 
-  const addTransaction = useCallback((newTransaction: Omit<Transaction, 'id'>) => {
-    setTransactions(prev => [...prev, { ...newTransaction, id: `t${prev.length + 1}` }]);
+  const addTransaction = useCallback(async (newTransaction: Omit<Transaction, 'id'>) => {
+    try {
+      const result = await transactionsApi.create(newTransaction);
+      setTransactions(prev => [...prev, result]);
+    } catch (error) {
+      console.error('Failed to add transaction:', error);
+    }
   }, []);
 
-  const addMultipleTransactions = useCallback((newTransactions: Omit<Transaction, 'id'>[]) => {
-    setTransactions(prev => {
-      const transactionsWithIds = newTransactions.map((tx, index) => ({
-        ...tx,
-        id: `t${prev.length + index + 1}`
-      }));
-      return [...prev, ...transactionsWithIds];
-    });
+  const addMultipleTransactions = useCallback(async (newTransactions: Omit<Transaction, 'id'>[]) => {
+    try {
+      const results = await transactionsApi.createBulk(newTransactions);
+      setTransactions(prev => [...prev, ...results]);
+    } catch (error) {
+      console.error('Failed to add transactions:', error);
+    }
   }, []);
 
-  const deleteTransaction = useCallback((transactionId: string) => {
-    setTransactions(prev => prev.filter(t => t.id !== transactionId));
+  const deleteTransaction = useCallback(async (transactionId: string) => {
+    try {
+      await transactionsApi.delete(transactionId);
+      setTransactions(prev => prev.filter(t => t.id !== transactionId));
+    } catch (error) {
+      console.error('Failed to delete transaction:', error);
+    }
   }, []);
 
   const handleUpdateIncome = useCallback((newIncome: number) => {
@@ -322,8 +379,19 @@ const App: React.FC = () => {
         return <LoginPage onLogin={handleLogin} onSwitchToRegister={() => setShowRegister(true)} />;
     }
 
+    if (isLoading) {
+        return (
+            <div className="flex h-screen bg-sky-50 items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-sky-800">Loading your financial data...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen bg-sky-50">
         <Sidebar 
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
